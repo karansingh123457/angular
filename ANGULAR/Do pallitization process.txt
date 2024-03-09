@@ -1,0 +1,243 @@
+import { HttpClient } from '@angular/common/http';
+import { AfterViewInit, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { FormBuilder, FormGroup, UntypedFormGroup } from '@angular/forms';
+import { MyService } from '../services/api.service';
+ 
+ 
+export interface form {
+  id: string,
+  formGroup: FormGroup,
+  metaData: any[],
+  transactionalData: any[],
+}
+@Component({
+  selector: 'app-palletization-process-dynamic',
+  templateUrl: './palletization-process-dynamic.component.html',
+  styleUrls: ['./palletization-process-dynamic.component.css']
+})
+export class PalletizationProcessDynamicComponent {
+ 
+  forms: form[] = [];
+  // @Output() output: EventEmitter<FormGroup> = new EventEmitter();
+  formJson: any;
+  public pageName: string = "Palletization Process";
+  orderData: any = [];
+  palletizationData: any = [];
+  stationData: any = [];
+  data: string = "";
+  cnfList: any = [];
+  palletizationList: any = [];
+  PalletizationProcessFirstGridData: any;
+  PalletizationProcessInputForm: any;
+ 
+  msg: any;
+  order_item: any;
+  order_return: any = [];
+  orderSearch = '';
+  palletSearch = '';
+  PALLET_ID: string = '';
+ 
+  //PAGINATION USE FOR ORDER DETAILS GRID
+  orderPageSize: number = 1;
+  orderItemsPerPage: number = 5;
+  orderPageSizeOptions = [5, 10, 25, 50];
+ 
+  //PAGINATION USE FOR PALLET DETAILS GRID
+  pageSize: number = 1;
+  itemsPerPage: number = 5;
+  pageSizeOptions = [5, 10, 25, 50];
+  searchQuery: any;
+ 
+ 
+  isFieldreadonly: boolean = true;
+  palletizationForm !: FormGroup;
+  selectedRowIndex: number = -1;
+  updatedlist: any = [];
+ 
+  checkList: any = [];
+  isSelected: boolean = false;
+  selectedItems: any = [];
+ 
+  username: any;
+  workstation: any;
+ 
+ 
+  public fg = new UntypedFormGroup({
+  });
+ 
+ 
+ 
+  constructor(private MyService: MyService, private fb: FormBuilder, private http: HttpClient) { }
+ 
+ 
+ 
+  ngOnInit() {
+    this.username = localStorage.getItem("Username");
+    this.workstation = localStorage.getItem("WorkStationID");
+    this.GetPalletizationOrderData();
+ 
+ 
+ 
+    this.PalletizationProcessFirstGridData = {
+      ORD_ID: {
+        label: 'Order Id',
+        value: '',
+        type: 'grid',
+        isActive: true,
+ 
+      }
+      ,
+      ORD_REF_POS: {
+        label: 'Transaction Id',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_HU_BAR_COD: {
+        label: 'Material Barcode',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_PRD_COD: {
+        label: 'Material Code',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_SERIE_NR: {
+        label: 'GRN No',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_REF_TYPE: {
+        label: 'Material Category',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_PRD_COD_TYPE: {
+        label: 'Material Type',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_DT_PRD: {
+        label: 'DOM',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_DT_EXPIRAT: {
+        label: 'DOE',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      VED_COD: {
+        label: 'Vendor Code',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_CLIENT: {
+        label: 'DIP ROLL NO',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_CO_REQ_QTY: {
+        label: 'QTY IN KG',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_WEIG_UNIT: {
+        label: 'Weight (in KG)',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_REQ_DOC_POS: {
+        label: 'NO _OF SP BOX',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_CUSTOM_NR: {
+        label: 'MATERIAL STATUS',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_DEST_TYPE: {
+        label: 'FULL/PARTIAL',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_INSPECT_NR: {
+        label: 'PROJECT_ID',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_DT_ACT: {
+        label: 'DOR',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_COMMENT: {
+        label: 'INOVICE NO',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_BATCH_NR: {
+        label: 'BATCH NO',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_CO_NAME: {
+        label: 'SAP Location',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_CO_CODE: {
+        label: 'Identifier(Left/Right)',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_REQ_QTY: {
+        label: 'ORD QTY',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_RSV_QTY: {
+        label: 'RSV Quantity',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+      ORD_ITM_STAT:{
+        label: 'Item Stat',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      },
+ 
+      HU_ID: {
+        label: 'Item Stat',
+        value: '',
+        type: 'grid',
+        isActive: true,
+      }
+ 
+ 
+    };
